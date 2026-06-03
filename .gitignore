@@ -1,0 +1,23 @@
+# 機密與本機設定
+.env
+.env.*
+
+# 賓客資料（隱私）
+data/guests.json
+data/guests.backup.json
+
+# 排座結果（之後階段 5）
+output/result.json
+
+# n8n 本機資料（階段 2 若用專案內 volume）
+n8n-data/
+
+# Node（之後有 scripts 時）
+node_modules/
+
+# 系統雜檔
+.DS_Store
+Thumbs.db
+
+# Cursor 本機設定（若要把 helper agent 進 repo，改為只忽略部分路徑）
+.cursor/
