@@ -3,7 +3,11 @@
     "total_attendee_count": 14,
     "total_baby_count": 1,
     "total_vegetarian_count": 0,
-    "party_count": 4
+    "party_count": 4,
+    "pending_count": 0,
+    "pending_list": [],
+    "invalid_count": 0,
+    "invalid_list": []
   },
   "lists": [
     {
