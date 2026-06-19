@@ -4,10 +4,27 @@
     "total_baby_count": 1,
     "total_vegetarian_count": 0,
     "party_count": 4,
-    "pending_count": 0,
-    "pending_list": [],
-    "invalid_count": 0,
-    "invalid_list": []
+    "pending_count": 3,
+    "pending_list": [
+      "0978456123",
+      "0978456125",
+      "0987878787"
+    ],
+    "invalid_count": 3,
+    "invalid_list": [
+      {
+        "phone": "0978456123",
+        "error": [["empty"]]
+      },
+      {
+        "phone": "0978456125",
+        "error": [["empty"]]
+      },
+      {
+        "phone": "0987878787",
+        "error": [["empty"]]
+      }
+    ]
   },
   "lists": [
     {
@@ -15,24 +32,26 @@
       "name": "測試1",
       "invitation_type": ["紙本", "電子"],
       "mail_address": "高雄市新興區測試路8787號",
-      "email_address": "testing@yahoo.com.tw",
-      "relationship_ids": ["groom_family"],
+      "email_address": "testing@example.com",
       "total_attendee_count": 1,
       "baby_count": 0,
       "vegetarian_count": 0,
-      "form_submitted_at": "2026/6/3 下午 10:35:40"
+      "form_submitted_at": "2026/6/3 下午 10:35:40",
+      "relationship_ids": ["groom_family", "groom_paternal_relatives"],
+      "removed_from_raw": false
     },
     {
       "phone": "0978456123",
       "name": "測試2",
       "invitation_type": ["電子"],
       "mail_address": "",
-      "email_address": "testing002@hotmail.com",
-      "relationship_ids": ["bride_friends"],
+      "email_address": "testing002@example.com",
       "total_attendee_count": 3,
       "baby_count": 1,
       "vegetarian_count": 0,
-      "form_submitted_at": "2026/6/3 下午 10:36:25"
+      "form_submitted_at": "2026/6/3 下午 10:36:25",
+      "relationship_ids": ["bride_friends"],
+      "removed_from_raw": false
     },
     {
       "phone": "0978456125",
@@ -40,11 +59,12 @@
       "invitation_type": ["紙本"],
       "mail_address": "高雄市鹽埕區測試街87號",
       "email_address": "",
-      "relationship_ids": ["bride_family"],
       "total_attendee_count": 5,
       "baby_count": 0,
       "vegetarian_count": 0,
-      "form_submitted_at": "2026/6/3 下午 10:37:04"
+      "form_submitted_at": "2026/6/3 下午 10:37:04",
+      "relationship_ids": ["bride_family"],
+      "removed_from_raw": false
     },
     {
       "phone": "0987878787",
@@ -52,11 +72,12 @@
       "invitation_type": ["紙本"],
       "mail_address": "",
       "email_address": "",
-      "relationship_ids": ["groom_friends"],
       "total_attendee_count": 5,
       "baby_count": 0,
       "vegetarian_count": 0,
-      "form_submitted_at": "2026/6/13 下午 4:29:06"
+      "form_submitted_at": "2026/6/13 下午 4:29:06",
+      "relationship_ids": ["groom_friends"],
+      "removed_from_raw": false
     }
   ]
 }
