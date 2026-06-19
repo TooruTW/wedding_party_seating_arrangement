@@ -8,8 +8,8 @@ data/guests.tags.json
 data/guests.raw.backup.json
 data/guests.tags.backup.json
 
-# 排座結果（之後階段 5）
-output/result.json
+# 排座結果（階段 5）
+output/
 
 # n8n 本機資料（階段 2 若用專案內 volume）
 n8n-data/

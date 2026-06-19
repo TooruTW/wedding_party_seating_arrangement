@@ -141,19 +141,22 @@ function invalidListFromMap(invalidByPhone) {
 }
 
 function computeSummary(lists, pendingList, invalidList) {
+  const active = lists.filter((row) => !row.removed_from_raw);
   let total_attendee_count = 0;
   let total_baby_count = 0;
   let total_vegetarian_count = 0;
-  for (const row of lists) {
+  for (const row of active) {
     total_attendee_count += Number(row.total_attendee_count) || 0;
     total_baby_count += Number(row.baby_count) || 0;
     total_vegetarian_count += Number(row.vegetarian_count) || 0;
   }
+  const removed_count = lists.length - active.length;
   return {
     total_attendee_count,
     total_baby_count,
     total_vegetarian_count,
-    party_count: lists.length,
+    party_count: active.length,
+    removed_count,
     pending_count: pendingList.length,
     pending_list: pendingList,
     invalid_count: invalidList.length,
@@ -260,10 +263,20 @@ function syncTagsFromRaw() {
   const taggingPendingPhones = lists
     .filter((row) => !row.removed_from_raw && isTaggingPending(row.relationship_ids))
     .map((row) => row.phone);
-  const pendingList = [...new Set([...pendingPhones, ...taggingPendingPhones])].sort();
+  const pendingList = [...new Set([...pendingPhones, ...taggingPendingPhones])]
+    .filter((phone) => {
+      const row = mergedByPhone.get(phone);
+      return row && !row.removed_from_raw;
+    })
+    .sort();
   report.pending = pendingList;
 
-  const invalidList = invalidListFromMap(invalidByPhone);
+  const removedPhones = new Set(
+    lists.filter((row) => row.removed_from_raw).map((row) => row.phone),
+  );
+  const invalidList = invalidListFromMap(invalidByPhone).filter(
+    (row) => !removedPhones.has(row.phone),
+  );
   const summary = computeSummary(lists, pendingList, invalidList);
   const result = { summary, lists };
 
