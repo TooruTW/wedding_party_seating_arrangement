@@ -1,0 +1,57 @@
+[
+  { "relationship_id": "groom_family", "relationship_label": "男方家族" },
+  { "relationship_id": "bride_family", "relationship_label": "女方家族" },
+  { "relationship_id": "groom_friends", "relationship_label": "男方朋友" },
+  { "relationship_id": "bride_friends", "relationship_label": "女方朋友" },
+  {
+    "relationship_id": "bride_maternal_relatives",
+    "relationship_label": "女方母系親戚"
+  },
+  {
+    "relationship_id": "bride_maternal_friends",
+    "relationship_label": "女方母系朋友"
+  },
+  {
+    "relationship_id": "bride_colleagues",
+    "relationship_label": "女方公司員工"
+  },
+  {
+    "relationship_id": "bride_paternal_relatives",
+    "relationship_label": "女方父系親戚"
+  },
+  {
+    "relationship_id": "bride_taipei_friends",
+    "relationship_label": "女方台北朋友"
+  },
+  {
+    "relationship_id": "bride_us_friends",
+    "relationship_label": "女方美國朋友"
+  },
+  {
+    "relationship_id": "groom_maternal_relatives",
+    "relationship_label": "男方母系親戚"
+  },
+  {
+    "relationship_id": "groom_maternal_friends",
+    "relationship_label": "男方母系朋友"
+  },
+  {
+    "relationship_id": "groom_paternal_relatives",
+    "relationship_label": "男方父系親戚"
+  },
+  {
+    "relationship_id": "groom_paternal_friends",
+    "relationship_label": "男方父系朋友"
+  },
+  { "relationship_id": "groom_neighbors", "relationship_label": "男方鄰居" },
+  {
+    "relationship_id": "groom_rocket_team",
+    "relationship_label": "男方火箭隊"
+  },
+  { "relationship_id": "groom_dance_club", "relationship_label": "男方熱舞社" },
+  { "relationship_id": "groom_college", "relationship_label": "男方大學同學" },
+  {
+    "relationship_id": "friends_isdejavu",
+    "relationship_label": "是曾相識朋友"
+  }
+]

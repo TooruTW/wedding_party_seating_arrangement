@@ -1,0 +1,19 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - TZ=Asia/Taipei
+      - GENERIC_TIMEZONE=Asia/Taipei
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      # n8n 2.x 預設只允許 ~/.n8n-files；要寫 /data 必須明確開放（分號分隔）
+      - N8N_RESTRICT_FILE_ACCESS_TO=/data;/home/node/.n8n-files
+    volumes:
+      # n8n 設定、workflow、credentials（重啟不會消失）
+      - ./n8n-data:/home/node/.n8n
+      # 階段 3：n8n 覆蓋 guests.raw.json；標記在 guests.tags.json（IDE）
+      - ./data:/data

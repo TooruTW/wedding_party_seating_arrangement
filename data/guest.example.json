@@ -1,13 +1,12 @@
 {
-    "name": "王小明",
-    "phone": "0912345678",
-    "invitation_type":["紙本","電子"],
-    "mail_address": "台北市大安區信義路四段100號",
-    "email_address": "wangxiaoming@example.com",
-    "relationship": "新郎大學同學",
-    "status": "pending",
-    "total_attendee_count": 1,
-    "baby_count": 0,
-    "vegetarian_count": 0,
-    "tags":[]
-  }
+  "phone": "0912345678",
+  "name": "王小明",
+  "invitation_type": ["紙本", "電子"],
+  "mail_address": "台北市大安區信義路四段100號",
+  "email_address": "wangxiaoming@example.com",
+  "relationship": "新郎大學同學",
+  "total_attendee_count": 1,
+  "baby_count": 0,
+  "vegetarian_count": 0,
+  "form_submitted_at": "2026/06/01 10:00:00"
+}

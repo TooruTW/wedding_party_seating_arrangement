@@ -3,8 +3,10 @@
 .env.*
 
 # 賓客資料（隱私）
-data/guests.json
-data/guests.backup.json
+data/guests.raw.json
+data/guests.tags.json
+data/guests.raw.backup.json
+data/guests.tags.backup.json
 
 # 排座結果（之後階段 5）
 output/result.json
