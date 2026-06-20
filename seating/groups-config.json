@@ -1,4 +1,5 @@
 {
   "min_per_group": 8,
-  "max_per_group": 10
+  "max_per_group": 10,
+  "allow_underflow_groups": true
 }

@@ -1,0 +1,12 @@
+{
+  "name": "google-form-observer",
+  "private": true,
+  "scripts": {
+    "sync": "node scripts/sync-tags-from-raw.js",
+    "sync:pending": "node scripts/sync-tags-from-raw.js --pending",
+    "build": "node scripts/build-seating.js",
+    "build:dry": "node scripts/build-seating.js --dry-run",
+    "build:all": "node scripts/sync-tags-from-raw.js && node scripts/build-seating.js",
+    "preview": "node scripts/build-seating.js --no-open"
+  }
+}

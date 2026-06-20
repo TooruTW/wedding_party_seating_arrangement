@@ -22,7 +22,10 @@ function pick(arr) {
   return arr[randInt(0, arr.length - 1)];
 }
 
-/** ponytail: greedy split; group count varies, each part 1–10, sum exact */
+const MIN_PER_PARTY = 1;
+const MAX_PER_PARTY = 5;
+
+/** ponytail: greedy split; party count varies, each part 1–7, sum exact */
 function splitAttendeeTotal(total) {
   if (!Number.isInteger(total) || total < 1) {
     throw new Error('total_attendee_count must be a positive integer');
@@ -30,8 +33,8 @@ function splitAttendeeTotal(total) {
   const counts = [];
   let remaining = total;
   while (remaining > 0) {
-    const max = Math.min(10, remaining);
-    counts.push(remaining <= max ? remaining : randInt(1, max));
+    const max = Math.min(MAX_PER_PARTY, remaining);
+    counts.push(remaining <= max ? remaining : randInt(MIN_PER_PARTY, max));
     remaining -= counts[counts.length - 1];
   }
   return counts;
@@ -89,7 +92,10 @@ function main() {
 
   const sum = guests.reduce((s, g) => s + g.total_attendee_count, 0);
   const uniquePhoneCount = new Set(guests.map((g) => g.phone)).size;
-  if (sum !== total || uniquePhoneCount !== guests.length) {
+  const outOfRange = guests.some(
+    (g) => g.total_attendee_count < MIN_PER_PARTY || g.total_attendee_count > MAX_PER_PARTY,
+  );
+  if (sum !== total || uniquePhoneCount !== guests.length || outOfRange) {
     throw new Error(`self-check failed: sum=${sum} phones=${uniquePhoneCount}`);
   }
 
