@@ -3,6 +3,9 @@
     "total_attendee_count": 14,
     "total_baby_count": 1,
     "total_vegetarian_count": 0,
+    "head_table_names": ["測試1"],
+    "head_table_count": 1,
+    "seating_attendee_count": 13,
     "party_count": 4,
     "removed_count": 0,
     "pending_count": 3,
@@ -39,6 +42,7 @@
       "vegetarian_count": 0,
       "form_submitted_at": "2026/6/3 下午 10:35:40",
       "relationship_ids": ["groom_family", "groom_paternal_relatives"],
+      "head_table_names": ["測試1"],
       "removed_from_raw": false
     },
     {
@@ -52,6 +56,7 @@
       "vegetarian_count": 0,
       "form_submitted_at": "2026/6/3 下午 10:36:25",
       "relationship_ids": ["bride_friends"],
+      "head_table_names": [],
       "removed_from_raw": false
     },
     {
@@ -65,6 +70,7 @@
       "vegetarian_count": 0,
       "form_submitted_at": "2026/6/3 下午 10:37:04",
       "relationship_ids": ["bride_family"],
+      "head_table_names": [],
       "removed_from_raw": false
     },
     {
@@ -78,6 +84,7 @@
       "vegetarian_count": 0,
       "form_submitted_at": "2026/6/13 下午 4:29:06",
       "relationship_ids": ["groom_friends"],
+      "head_table_names": [],
       "removed_from_raw": false
     }
   ]

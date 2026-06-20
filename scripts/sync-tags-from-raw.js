@@ -8,6 +8,12 @@
  */
 const fs = require('fs');
 const path = require('path');
+const {
+  headTableNames,
+  seatingHeadcount,
+  validateHeadTableNames,
+  ensureHeadTableNamesField,
+} = require('../seating/headcount');
 
 const ROOT = path.join(__dirname, '..');
 const RAW_PATH = path.join(ROOT, 'data', 'guests.raw.json');
@@ -145,16 +151,23 @@ function computeSummary(lists, pendingList, invalidList) {
   let total_attendee_count = 0;
   let total_baby_count = 0;
   let total_vegetarian_count = 0;
+  let seating_attendee_count = 0;
   for (const row of active) {
     total_attendee_count += Number(row.total_attendee_count) || 0;
     total_baby_count += Number(row.baby_count) || 0;
     total_vegetarian_count += Number(row.vegetarian_count) || 0;
+    seating_attendee_count += seatingHeadcount(row);
   }
+  // ponytail: head table roster is manual; include stale rows so names aren't dropped on sync
+  const head_table_names = lists.flatMap((row) => headTableNames(row));
   const removed_count = lists.length - active.length;
   return {
     total_attendee_count,
     total_baby_count,
     total_vegetarian_count,
+    head_table_names,
+    head_table_count: head_table_names.length,
+    seating_attendee_count,
     party_count: active.length,
     removed_count,
     pending_count: pendingList.length,
@@ -210,12 +223,13 @@ function syncTagsFromRaw() {
     );
     mergeInvalidByPhone(invalidByPhone, phone, errors);
 
-    const entry = {
+    const entry = ensureHeadTableNamesField({
       ...(existing ?? {}),
       ...fields,
       relationship_ids: deduped,
       removed_from_raw: false,
-    };
+    });
+    mergeInvalidByPhone(invalidByPhone, phone, validateHeadTableNames(entry));
 
     if (isNew) {
       report.added.push(phone);
@@ -247,12 +261,12 @@ function syncTagsFromRaw() {
       validIds,
     );
     mergeInvalidByPhone(invalidByPhone, phone, errors);
-
-    const entry = {
+    const entry = ensureHeadTableNamesField({
       ...existing,
       relationship_ids: deduped,
       removed_from_raw: true,
-    };
+    });
+    mergeInvalidByPhone(invalidByPhone, phone, validateHeadTableNames(entry));
     report.stale.push(phone);
     mergedByPhone.set(phone, entry);
   }
@@ -305,6 +319,14 @@ function printReport(report, summary, invalidList) {
           console.log(`  warn:    ${phone} tagging pending (no manual relationship_ids)`);
         } else if (item[0] === 'wrong_id') {
           console.log(`  warn:    ${phone} invalid relationship_id "${item[1]}"`);
+        } else if (item[0] === 'headcount_error') {
+          console.log(
+            `  error:   ${phone} 人數異常（主桌 ${item[1]} 人 > 與會 ${item[2]} 人）`,
+          );
+        } else if (item[0] === 'head_table_bad_name') {
+          console.log(`  warn:    ${phone} head_table_names has empty or invalid name`);
+        } else if (item[0] === 'head_table_bad_type') {
+          console.log(`  warn:    ${phone} head_table_names must be an array`);
         }
       }
     }
@@ -313,7 +335,7 @@ function printReport(report, summary, invalidList) {
     `  pending: ${report.pending.length ? report.pending.join(', ') : '0'}`,
   );
   console.log(
-    `  summary: ${summary.total_attendee_count} 人 / ${summary.total_baby_count} 嬰兒 / ${summary.total_vegetarian_count} 素食 / ${summary.party_count} party`,
+    `  summary: ${summary.total_attendee_count} 人 / 主桌 ${summary.head_table_count} / 一般桌 ${summary.seating_attendee_count} / ${summary.total_baby_count} 嬰兒 / ${summary.total_vegetarian_count} 素食 / ${summary.party_count} party`,
   );
 }
 
@@ -360,6 +382,24 @@ if (require.main === module) {
   const bad = validateRelationshipIds(['groom_family', 'nope'], new Set(['groom_family']));
   assert(bad.errors.some((e) => e[0] === 'wrong_id' && e[1] === 'nope'));
   assert(validateRelationshipIds(['groom_family'], new Set(['groom_family'])).errors[0][0] === 'empty');
+  assert(seatingHeadcount({ total_attendee_count: 4, head_table_names: ['甲', '乙'] }) === 2);
+  const sum = computeSummary(
+    [
+      { total_attendee_count: 3, head_table_names: ['主桌A'], removed_from_raw: false },
+      { total_attendee_count: 2, removed_from_raw: false },
+      { total_attendee_count: 1, head_table_names: ['主桌B'], removed_from_raw: true },
+    ],
+    [],
+    [],
+  );
+  assert(sum.head_table_count === 2 && sum.seating_attendee_count === 4);
+  assert(
+    validateHeadTableNames({ total_attendee_count: 1, head_table_names: ['a', 'b'] }).some(
+      (e) => e[0] === 'headcount_error' && e[1] === 2 && e[2] === 1,
+    ),
+  );
+  assert(ensureHeadTableNamesField({ phone: '1' }).head_table_names.join() === '');
+  assert(Array.isArray(ensureHeadTableNamesField({ phone: '1', head_table_names: ['x'] }).head_table_names));
 
   try {
     main();
@@ -379,4 +419,8 @@ module.exports = {
   validateRelationshipIds,
   mergeInvalidByPhone,
   invalidListFromMap,
+  headTableNames,
+  seatingHeadcount,
+  validateHeadTableNames,
+  ensureHeadTableNamesField,
 };

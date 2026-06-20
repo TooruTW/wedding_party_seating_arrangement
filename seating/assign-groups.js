@@ -4,10 +4,11 @@
  * - Exits if summary has pending_list or invalid_list
  * - Skips removed_from_raw
  * - Adds to a group only when relationship_ids overlap (>0) with a member
- * - Each group: min_per_group..max_per_group headcount (total_attendee_count)
+ * - Each group: min_per_group..max_per_group seating headcount (total − head_table_names)
  */
 const fs = require('fs');
 const path = require('path');
+const { headTableNames, seatingHeadcount } = require('./headcount');
 
 const ROOT = path.join(__dirname, '..');
 const TAGS_PATH = path.join(ROOT, 'data', 'guests.tags.json');
@@ -41,14 +42,17 @@ function overlapWithGroup(party, group) {
 }
 
 function groupHeadcount(group) {
-  return group.reduce((sum, p) => sum + (Number(p.total_attendee_count) || 0), 0);
+  return group.reduce((sum, p) => sum + seatingHeadcount(p), 0);
 }
 
 function partySnapshot(party) {
+  const names = headTableNames(party);
   return {
     phone: party.phone,
     name: party.name,
-    headcount: Number(party.total_attendee_count) || 0,
+    headcount: seatingHeadcount(party),
+    total_attendee_count: Number(party.total_attendee_count) || 0,
+    head_table_names: [...names],
     relationship_ids: [...(party.relationship_ids ?? [])],
   };
 }
@@ -73,17 +77,18 @@ function assertPrerequisites(summary) {
 
 function loadParties(tagsDoc) {
   const lists = Array.isArray(tagsDoc.lists) ? tagsDoc.lists : [];
-  return lists.filter((row) => !row.removed_from_raw);
+  return lists.filter((row) => !row.removed_from_raw && seatingHeadcount(row) > 0);
 }
 
 /** ponytail: greedy grow-by-overlap; O(n²) per group, fine for wedding-scale n */
 function assignGroups(parties, minPerGroup, maxPerGroup) {
   const resolved = [];
   const pending = [];
-  let unassigned = [...parties];
+  const seatingParties = parties.filter((p) => seatingHeadcount(p) > 0);
+  let unassigned = [...seatingParties];
 
-  for (const party of parties) {
-    const hc = Number(party.total_attendee_count) || 0;
+  for (const party of seatingParties) {
+    const hc = seatingHeadcount(party);
     if (hc > maxPerGroup) {
       pending.push({
         reason: 'party_overflow',
@@ -105,8 +110,8 @@ function assignGroups(parties, minPerGroup, maxPerGroup) {
         if (other.phone === candidate.phone) continue;
         score += overlapCount(candidate, other);
       }
-      const hc = Number(candidate.total_attendee_count) || 0;
-      if (score > bestSeedScore || (score === bestSeedScore && hc > (Number(seed.total_attendee_count) || 0))) {
+      const hc = seatingHeadcount(candidate);
+      if (score > bestSeedScore || (score === bestSeedScore && hc > seatingHeadcount(seed))) {
         bestSeedScore = score;
         seed = candidate;
       }
@@ -123,7 +128,7 @@ function assignGroups(parties, minPerGroup, maxPerGroup) {
       let bestOverlap = -1;
       let bestHc = Infinity;
       for (const candidate of unassigned) {
-        const addHc = Number(candidate.total_attendee_count) || 0;
+        const addHc = seatingHeadcount(candidate);
         if (currentHc + addHc > maxPerGroup) continue;
         const ov = overlapWithGroup(candidate, group);
         if (
@@ -154,7 +159,7 @@ function assignGroups(parties, minPerGroup, maxPerGroup) {
           reason: hc < minPerGroup ? 'group_underflow' : 'group_overflow',
           phone: party.phone,
           name: party.name,
-          headcount: Number(party.total_attendee_count) || 0,
+          headcount: seatingHeadcount(party),
           attempted_group_headcount: hc,
           min_per_group: minPerGroup,
           max_per_group: maxPerGroup,
@@ -174,12 +179,18 @@ function assignGroupsFromTags(tagsDoc, config) {
     throw new Error('groups-config: min_per_group cannot exceed max_per_group');
   }
 
+  const allActive = (Array.isArray(tagsDoc.lists) ? tagsDoc.lists : []).filter(
+    (row) => !row.removed_from_raw,
+  );
+  const headTableOnlyCount = allActive.filter((row) => seatingHeadcount(row) === 0).length;
+
   const parties = loadParties(tagsDoc);
   const { resolved, pending } = assignGroups(parties, minPerGroup, maxPerGroup);
 
   return {
     summary: {
       party_count: parties.length,
+      head_table_only_count: headTableOnlyCount,
       group_count: resolved.length,
       grouped_headcount: resolved.reduce((s, g) => s + g.headcount, 0),
       pending_count: pending.length,
@@ -197,8 +208,17 @@ function printReport(result) {
     `  groups:  ${result.summary.group_count} 組 / ${result.summary.grouped_headcount} 人`,
   );
   for (const g of result.groups) {
-    const names = g.parties.map((p) => `${p.name}(${p.headcount})`).join(', ');
+    const names = g.parties
+      .map((p) => {
+        const ht =
+          p.head_table_names?.length > 0 ? ` −主桌${p.head_table_names.length}` : '';
+        return `${p.name}(${p.headcount}${ht})`;
+      })
+      .join(', ');
     console.log(`    #${g.group_index} [${g.headcount}] ${names}`);
+  }
+  if (result.summary.head_table_only_count) {
+    console.log(`  head_table_only: ${result.summary.head_table_only_count} party 不參與分組`);
   }
   if (result.pending.length) {
     console.log(`  pending: ${result.pending.length}`);
@@ -235,10 +255,11 @@ if (require.main === module) {
   const assert = (cond, msg) => {
     if (!cond) throw new Error(`self-check: ${msg}`);
   };
-  const mk = (phone, name, hc, ids) => ({
+  const mk = (phone, name, hc, ids, headTable = []) => ({
     phone,
     name,
     total_attendee_count: hc,
+    head_table_names: headTable,
     relationship_ids: ids,
     removed_from_raw: false,
   });
@@ -269,6 +290,12 @@ if (require.main === module) {
     'no-overlap party must not join group',
   );
   assert(noLink.pending.some((p) => p.phone === '3'));
+  const headOnly = assignGroups(
+    [mk('h', '主桌代表', 2, ['groom_family'], ['父', '母'])],
+    8,
+    10,
+  );
+  assert(headOnly.resolved.length === 0 && headOnly.pending.length === 0);
 
   try {
     main();
@@ -284,4 +311,5 @@ module.exports = {
   overlapCount,
   overlapWithGroup,
   loadParties,
+  seatingHeadcount,
 };
