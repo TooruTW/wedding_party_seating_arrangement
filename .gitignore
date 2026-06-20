@@ -26,3 +26,4 @@ Thumbs.db
 
 # 筆記與指令速查（本機用，不進版控）
 *.md
+!README.md

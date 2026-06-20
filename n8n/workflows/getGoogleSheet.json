@@ -1,0 +1,140 @@
+{
+  "name": "getGoogleSheet",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e642a9cf-5185-4ab5-8ecf-6fbc7c3e1c8b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "表單回應 1",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e067c0fa-3479-4cf4-8bd4-bdba8424b731",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const row = $json;\n\nfunction parseInvitationType(val) {\n  if (!val) return [];\n  if (Array.isArray(val)) return val;\n  return String(val).split(/[,，]/).map(s => s.trim()).filter(Boolean);\n}\n\nfunction toNumber(val, fallback = 0) {\n  const n = Number(val);\n  return Number.isFinite(n) ? n : fallback;\n}\n\nreturn {\n  json: {\n    phone: String(row['連絡電話'] ?? '').trim(),\n    name: row['與會者大名 (中英文全名)'] ?? '',\n    invitation_type: parseInvitationType(row['喜帖種類']),\n    mail_address: row['收件地址'] ?? '',\n    email_address: row['電子信箱'] ?? '',\n    relationship: row['與新人關係'] ?? '',\n    total_attendee_count: toNumber(row['與會人數 (總人數)'], 1),\n    baby_count: toNumber(row['嬰兒座椅數量'], 0),\n    vegetarian_count: toNumber(row['素食者數量'], 0),\n    form_submitted_at: row['時間戳記'] ?? '',\n  },\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "81a01937-8caf-4d82-8cec-d3ed04cd6a3c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const guests = $('Code in JavaScript').all().map(item => item.json);\nconst jsonText = JSON.stringify(guests, null, 2);\n\nreturn [{\n  json: {\n    ok: true,\n    count: guests.length,\n    path: '/data/guests.raw.json',\n  },\n  binary: {\n    data: await this.helpers.prepareBinaryData(jsonText, 'guests.raw.json'),\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "73eb2427-cc78-4c03-98a2-18d4713c6185",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/guests.raw.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        0
+      ],
+      "id": "ce41642c-82a8-40bd-aa68-9424a3b7a5f5",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {}
+}
