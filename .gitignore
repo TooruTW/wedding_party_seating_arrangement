@@ -23,3 +23,6 @@ Thumbs.db
 
 # Cursor 本機設定（若要把 helper agent 進 repo，改為只忽略部分路徑）
 .cursor/
+
+# 筆記與指令速查（本機用，不進版控）
+*.md
