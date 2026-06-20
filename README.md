@@ -10,8 +10,6 @@
 4. **分組**：產出 8–10 人一組的社交單位（`output/groups.json`）
 5. **預覽**：瀏覽器開 `output/groups-view.html` 確認
 
-> 不排桌號，桌位由現場自行安排。
-
 ## 環境
 
 | 工具 | 用途 |
@@ -146,7 +144,7 @@ node scripts/export-n8n-workflows.js
 2. 確認本機出現 `data/guests.raw.json`，筆數與試算表一致
 3. 表單多填一筆 → 再 Execute → raw 有更新
 
-之後有新回覆就**手動再跑一次** workflow（MVP 不做自動 trigger）。
+之後有新回覆就**手動再跑一次** workflow。
 
 ---
 
